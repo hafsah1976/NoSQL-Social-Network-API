@@ -1,6 +1,7 @@
-const mongoose = require('mongoose');
+const {Schema, model} = require('mongoose');
+//add date format require() here
 
-const userSchema = new mongoose.Schema({
+const userSchema = new Schema({
   username: {
     type: String,
     unique: true,
@@ -16,23 +17,29 @@ const userSchema = new mongoose.Schema({
   },
   thoughts: [
     {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'Thought', // Reference to the Thought model
     },
   ],
   friends: [
     {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: 'User', // Self-reference to the User model
     },
-  ],
-});
+  ]
+},
+{
+  toJSON:{
+    virtuals:true
+  },
+}
+);
 
 // Create a virtual field "friendCount" to calculate the length of the "friends" array
 userSchema.virtual('friendCount').get(function () {
   return this.friends.length;
 });
 
-const User = mongoose.model('User', userSchema);
+const User = model('User', userSchema);
 
 module.exports = User;

@@ -1,8 +1,8 @@
-const mongoose = require('mongoose');
-
+const {Schema, model, Types} = require('mongoose');
+const dateFormat = require('day.js');
 
 // Thought Schema
-const thoughtSchema = new mongoose.Schema({
+const thoughtSchema = new Schema({
   thoughtText: {
     type: String,
     required: true,
@@ -22,6 +22,7 @@ const thoughtSchema = new mongoose.Schema({
 
   toJSON: {
     virtuals: true,
+    getters: true
   },
   id: false,
 },
@@ -32,12 +33,17 @@ thoughtSchema.virtual('formattedCreatedAt').get(function () {
   return this.createdAt.toISOString(); // Customize the formatting as needed
 });
 
+// Creating a virtual field "reactionCount" to calculate the length of the "reactions" array
+thoughtSchema.virtual('reactionCount').get(function () {
+  return this.reactions.length;
+});
 
 // Reaction Schema (for nested documents in reactions array)
-const reactionSchema = new mongoose.Schema({
+const reactionSchema = new Schema (
+  {
   reactionId: {
-    type: mongoose.Schema.Types.ObjectId,
-    default: () => new mongoose.Types.ObjectId(),
+    type: Schema.Types.ObjectId,
+    default: () => new Types.ObjectId(),
   },
   reactionBody: {
     type: String,
@@ -51,21 +57,25 @@ const reactionSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
+    //add date formate here
+  }
+},
+{
+  toJSON:{
+    virtuals:true,
+    getters:true
   },
-});
+  id:false
+}
+);
 
-// Creating a virtual field "reactionCount" to calculate the length of the "reactions" array
-thoughtSchema.virtual('reactionCount').get(function () {
-  return this.reactions.length;
-});
 
 // Defining a getter method for "createdAt" to format the timestamp on query
 reactionSchema.virtual('formattedCreatedAt').get(function () {
   return this.createdAt.toISOString(); 
 });
 
-const Thought = mongoose.model('Thought', thoughtSchema);
-const Reaction = mongoose.model('Reaction', reactionSchema);
+const Thought = model('Thought', thoughtSchema);
  
 module.exports = { Thought, Reaction };
 
