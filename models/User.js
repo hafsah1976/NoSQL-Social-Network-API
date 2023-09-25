@@ -28,11 +28,6 @@ const userSchema = new Schema({
     },
   ]
 },
-{
-  toJSON:{
-    virtuals:true
-  },
-}
 );
 
 // Create a virtual field "friendCount" to calculate the length of the "friends" array

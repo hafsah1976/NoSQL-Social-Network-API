@@ -3,6 +3,13 @@ const express = require('express'); // Import Express.js
 const db = require('./config/connection'); // Import database connection configuration
 const routes = require('./routes'); // Import route handlers
 
+const cwd = process.cwd();
+
+// Note: not necessary for the Express server to function. This just helps indicate what activity's server is running in the terminal.
+const activity = cwd.includes('NoSQL-Social-Network-API')
+  ? cwd.split('NoSQL-Social-Network-API')[1]
+  : cwd;
+
 // Define the port for the server to listen on
 const PORT = process.env.PORT || 3001;
 
@@ -20,6 +27,6 @@ app.use(routes);
 db.once('open', () => {
   // Start the Express server and listen on the specified port
   app.listen(PORT, () => {
-    console.log(`API server for running on port ${PORT}!`);
+    console.log(`API server for ${activity} is now running on port ${PORT}!`);
   });
 });

@@ -112,53 +112,69 @@ module.exports = {
     }
   },
 
-  // Add a friend to a user's friend list
-  async addFriend({ params }, res) {
-    try {
-      // Add the specified friend to the user's friends array
-      const userFriendData = await User.findOneAndUpdate(
-        { _id: params.userId },
-        { $push: { friends: params.friendId } },
-        { new: true }
-      );
+ // Add a friend to a user's friend list
+ async addFriend(req, res) {
+  try {
+    const { userId, friendId } = req.params;
 
-      // If the user is not found, send a 404 status with an error message
-      if (!userFriendData) {
-        res.status(404).json({ message: 'Could not find any user with this id!' });
-        return;
-      }
-
-      // Send the updated user data as a JSON response
-      res.json(userFriendData);
-    } catch (error) {
-      // If there's an error, log it and send the error as a JSON response
-      console.error(error);
-      res.status(400).json(error);
+    // Validate userId and friendId
+    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(friendId)) {
+      res.status(400).json({ message: 'Invalid userId or friendId.' });
+      return;
     }
-  },
 
-  // Delete a friend from a user's friend list
-  async deleteFriend({ params }, res) {
-    try {
-      // Remove the specified friend from the user's friends array
-      const userFriendData = await User.findOneAndUpdate(
-        { _id: params.userId },
-        { $pull: { friends: params.friendId } },
-        { new: true }
-      );
+    // Add the specified friend to the user's friends array
+    const userFriendData = await User.findOneAndUpdate(
+      { _id: userId },
+      { $push: { friends: friendId } },
+      { new: true }
+    );
 
-      // If the user is not found, send a 404 status with an error message
-      if (!userFriendData) {
-        res.status(404).json({ message: 'Could not find any user with this id!' });
-        return;
-      }
-
-      // Send the updated user data as a JSON response
-      res.json(userFriendData);
-    } catch (error) {
-      // If there's an error, log and send the error as a JSON response
-      console.error(error);
-      res.status(400).json(error);
+    // If the user is not found, send a 404 status with an error message
+    if (!userFriendData) {
+      res.status(404).json({ message: 'Could not find any user with this id!' });
+      return;
     }
-  },
+
+    // Send the updated user data as a JSON response
+    res.json(userFriendData);
+  } catch (error) {
+    // If there's an error, log it and send the error as a JSON response
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+},
+
+// Delete a friend from a user's friend list
+async deleteFriend(req, res) {
+  try {
+    const { userId, friendId } = req.params;
+
+    // Validate userId and friendId
+    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(friendId)) {
+      res.status(400).json({ message: 'Invalid userId or friendId.' });
+      return;
+    }
+
+    // Remove the specified friend from the user's friends array
+    const userFriendData = await User.findOneAndUpdate(
+      { _id: userId },
+      { $pull: { friends: friendId } },
+      { new: true }
+    );
+
+    // If the user is not found, send a 404 status with an error message
+    if (!userFriendData) {
+      res.status(404).json({ message: 'Could not find any user with this id!' });
+      return;
+    }
+
+    // Send the updated user data as a JSON response
+    res.json(userFriendData);
+  } catch (error) {
+    // If there's an error, log it and send the error as a JSON response
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+},
 };

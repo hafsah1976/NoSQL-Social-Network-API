@@ -23,13 +23,13 @@ const reactionSchema = new Schema (
       //add date formate here
     }
   },
-  {
-    toJSON:{
-      virtuals:true,
-      getters:true
-    },
-    id:false
-  }
+  // {
+  //   toJSON:{
+  //     virtuals:true,
+  //     getters:true
+  //   },
+  //   id:false
+  // }
   );
 
   module.exports = reactionSchema;
