@@ -1,6 +1,7 @@
 const { User, Thought } = require('../models');  // Import the "Thought" and "User" models 
+const mongoose = require ('mongoose');
 
-module.exports = {
+const thoughtController  =  {
   // Get all thoughts
   async getAllThoughts(req, res)  {
     try {
@@ -48,33 +49,32 @@ module.exports = {
     }
   },
 
-  // Create a new thought
-  async createThought({ body }, res) {
-    try {
-      // Create a new thought based on the request body
-      const thoughtData = await Thought.create(body);
-      const userId = body.userId;
+// Create a new thought
+async createThought({ body }, res) { // Use the destructured body parameter
+  try {
+    // Create a new thought based on the request body
+    const thoughtData = await Thought.create(body); // Use the destructured body parameter
 
-      // Update the user's thoughts array with the new thought's ID
-      const userData = await User.findOneAndUpdate(
-        { _id: userId },
-        { $push: { thoughts: thoughtData._id } },
-        { new: true }
-      );
+    // Update the user's thoughts array with the new thought's ID
+    const userData = await User.findOneAndUpdate(
+      { userId: body.userId }, // Use the destructured body parameter
+      { $push: { thoughts: thoughtData._id } },
+      { new: true }
+    );
 
-      // If no user is found, return a 404 status code
-      if (!userData) {
-        return res.status(404).json({ message: 'Could not find any user with this id!' });
-      }
-
-      // Send the created thought data as JSON response
-      res.json(thoughtData);
-    } catch (error) {
-      // Handle any errors and send a 400 status code on error
-      console.error(error);
-      res.sendStatus(400);
+    // If no user is found, return a 404 status code
+    if (!userData) {
+      return res.status(404).json({ message: 'Could not find any user with this id!' });
     }
-  },
+
+    // Send the created thought data as JSON response
+    res.json(thoughtData);
+  } catch (error) {
+    // Handle any errors and send a 400 status code on error
+    console.error(error);
+    res.sendStatus(400);
+  }
+},
 
   // Update a thought by its ID
   async updateThought({ params, body }, res) {
@@ -182,3 +182,4 @@ module.exports = {
     }
   }
 };
+module.exports = thoughtController;

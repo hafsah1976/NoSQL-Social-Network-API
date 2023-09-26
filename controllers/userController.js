@@ -1,7 +1,8 @@
 // Import the required models
+const mongoose = require ('mongoose');
 const { User, Thought } = require('../models');
 
-module.exports = {
+const userController = {
   // Get all users
   async getAllUsers(req, res) {
     try {
@@ -112,14 +113,20 @@ module.exports = {
     }
   },
 
- // Add a friend to a user's friend list
- async addFriend(req, res) {
+// Add a friend to a user's friend list
+async addFriend(req, res) {
   try {
     const { userId, friendId } = req.params;
 
-    // Validate userId and friendId
-    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(friendId)) {
-      res.status(400).json({ message: 'Invalid userId or friendId.' });
+    // Validate userId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      res.status(400).json({ message: 'Invalid userId.' });
+      return;
+    }
+
+    // Validate friendId
+    if (!mongoose.Types.ObjectId.isValid(friendId)) {
+      res.status(400).json({ message: 'Invalid friendId.' });
       return;
     }
 
@@ -141,7 +148,7 @@ module.exports = {
   } catch (error) {
     // If there's an error, log it and send the error as a JSON response
     console.error(error);
-    res.status(500).json({ message: 'Internal server error.' });
+    res.status(500).json({ message: 'Internal server error. Please try again.' });
   }
 },
 
@@ -174,7 +181,81 @@ async deleteFriend(req, res) {
   } catch (error) {
     // If there's an error, log it and send the error as a JSON response
     console.error(error);
-    res.status(500).json({ message: 'Internal server error.' });
+    res.status(500).json({ message: 'Internal server error. Please try again.' });
+  }
+},
+
+ // Get all friends of a user
+ async getAllFriends(req, res) {
+  try {
+    const { userId } = req.params;
+
+    // Validate userId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      res.status(400).json({ message: 'Invalid userId.' });
+      return;
+    }
+
+    // Find the user by their _id and populate the 'friends' field
+    const user = await User.findOne({ _id: userId })
+      .populate({
+        path: 'friends',
+        select: '-__v',
+      });
+
+    // If the user is not found, send a 404 status with an error message
+    if (!user) {
+      res.status(404).json({ message: 'Could not find any user with this id!' });
+      return;
+    }
+
+    // Extract the 'friends' field from the user object
+    const friends = user.friends;
+
+    // Send the list of friends as a JSON response
+    res.json(friends);
+  } catch (error) {
+    // If there's an error, log it and send the error as a JSON response
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error. Please try again.' });
+  }
+},
+
+// Get a friend by ID
+async getFriendById(req, res) {
+  try {
+    const { userId, friendId } = req.params;
+
+    // Validate userId and friendId
+    if (!mongoose.Types.ObjectId.isValid(userId) || !mongoose.Types.ObjectId.isValid(friendId)) {
+      res.status(400).json({ message: 'Invalid userId or friendId.' });
+      return;
+    }
+
+    // Find the user by their _id and check if the friend exists in their 'friends' list
+    const user = await User.findOne({ _id: userId, friends: friendId })
+      .populate({
+        path: 'friends',
+        select: '-__v',
+      });
+
+    // If the user or friend is not found, or the friend is not in the user's friends list, send a 404 status with an error message
+    if (!user) {
+      res.status(404).json({ message: 'Could not find any user with this id!' });
+      return;
+    }
+
+    // Extract the friend from the user object
+    const friend = user.friends.find(f => f._id.equals(friendId));
+
+    // Send the friend data as a JSON response
+    res.json(friend);
+  } catch (error) {
+    // If there's an error, log it and send the error as a JSON response
+    console.error(error);
+    res.status(500).json({ message: 'Internal server error. Please try again.' });
   }
 },
 };
+
+module.exports = userController;
