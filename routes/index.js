@@ -10,5 +10,5 @@ router.use((req, res) => {
   res.status(404).send('<h1>Wrong Route! Please try again.</h1>');
 });
 
-module.exports = apiRoutes;
+// module.exports = apiRoutes;
 module.exports = router;
